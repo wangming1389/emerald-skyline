@@ -632,6 +632,32 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Create Backend CI Environment
+        env:
+          DB_URL: ${{ vars.E2E_DATABASE_URL }}
+          ACCESS_SECRET: ${{ secrets.JWT_SECRET || 'ci-e2e-access-secret' }}
+          REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET || 'ci-e2e-refresh-secret' }}
+        run: |
+          if [ -z "$DB_URL" ]; then
+            echo "::error::Missing E2E_DATABASE_URL. Add it as a GitHub Actions variable that points to a dedicated test database."
+            exit 1
+          fi
+
+          cat > .env <<EOF
+          DATABASE_URL=$DB_URL
+          E2E_DATABASE_URL=$DB_URL
+          JWT_SECRET=$ACCESS_SECRET
+          JWT_REFRESH_SECRET=$REFRESH_SECRET
+          JWT_EXPIRATION=15m
+          JWT_REFRESH_EXPIRATION=7d
+          FRONTEND_URL=http://localhost:5173
+          BACKEND_URL=http://localhost:4000
+          VNPAY_TMN_CODE=E2ETMN
+          VNPAY_HASH_SECRET=ci-e2e-vnpay-hash-secret
+          EOF
+
+          cat .env >> "$GITHUB_ENV"
+
       - name: Run Tests with Coverage
         run: |
           npm run test:cov -- \
@@ -644,11 +670,6 @@ jobs:
         run: npm run test:e2e
         env:
           CI: true
-          E2E_DATABASE_URL: ${{ secrets.E2E_DATABASE_URL }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-e2e-access-secret' }}
-          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET || 'ci-e2e-refresh-secret' }}
-          FRONTEND_URL: http://localhost:5173
-          BACKEND_URL: http://localhost:4000
 
       - name: Upload Coverage Reports
         if: always()
