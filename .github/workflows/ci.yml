@@ -640,6 +640,16 @@ jobs:
         env:
           CI: true
 
+      - name: Run Backend E2E Tests
+        run: npm run test:e2e
+        env:
+          CI: true
+          E2E_DATABASE_URL: ${{ secrets.E2E_DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-e2e-access-secret' }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET || 'ci-e2e-refresh-secret' }}
+          FRONTEND_URL: http://localhost:5173
+          BACKEND_URL: http://localhost:4000
+
       - name: Upload Coverage Reports
         if: always()
         uses: codecov/codecov-action@v4
