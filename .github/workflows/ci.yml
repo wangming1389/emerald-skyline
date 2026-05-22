@@ -634,12 +634,12 @@ jobs:
 
       - name: Create Backend CI Environment
         env:
-          DB_URL: ${{ vars.E2E_DATABASE_URL }}
+          DB_URL: ${{ secrets.E2E_DATABASE_URL }}
           ACCESS_SECRET: ${{ secrets.JWT_SECRET || 'ci-e2e-access-secret' }}
           REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET || 'ci-e2e-refresh-secret' }}
         run: |
           if [ -z "$DB_URL" ]; then
-            echo "::error::Missing E2E_DATABASE_URL. Add it as a GitHub Actions variable that points to a dedicated test database."
+            echo "::error::Missing E2E_DATABASE_URL. Add it as a GitHub Actions secret that points to a dedicated test database."
             exit 1
           fi
 
