@@ -35,7 +35,7 @@ describe("AuthModule (Unit + Integration)", () => {
 	): Account => {
 		const account = new Account();
 		account.id = overrides.id ?? 1;
-		account.email = overrides.email ?? "test@example.com";
+		account.email = overrides.email ?? "test123@example.com";
 		account.password = overrides.password ?? "hashedPassword";
 		account.role = overrides.role ?? UserRole.RESIDENT;
 		account.isActive = overrides.isActive ?? true;
@@ -54,7 +54,7 @@ describe("AuthModule (Unit + Integration)", () => {
 	};
 	const mockUserPayload = {
 		id: 1,
-		email: "test@example.com",
+		email: "test123@example.com",
 		role: UserRole.RESIDENT,
 	};
 
@@ -117,7 +117,7 @@ describe("AuthModule (Unit + Integration)", () => {
 				accountsService.findByEmail.mockResolvedValue(mockAccount);
 
 				const result = await authService.validateUser(
-					"test@example.com",
+					"test123@example.com",
 					"password",
 				);
 
@@ -153,7 +153,7 @@ describe("AuthModule (Unit + Integration)", () => {
 				);
 
 				const result = await authService.validateUser(
-					"test@example.com",
+					"test123@example.com",
 					"wrong",
 				);
 
@@ -183,7 +183,10 @@ describe("AuthModule (Unit + Integration)", () => {
 			it("should return new tokens when user is active and email matches", async () => {
 				accountsService.findOne.mockResolvedValue(mockAccount);
 
-				const result = await authService.refreshTokens(1, "test@example.com");
+				const result = await authService.refreshTokens(
+					1,
+					"test123@example.com",
+				);
 
 				expect(result.accessToken).toBeDefined();
 				expect(result.refreshToken).toBeDefined();
@@ -198,7 +201,7 @@ describe("AuthModule (Unit + Integration)", () => {
 				);
 
 				await expect(
-					authService.refreshTokens(999, "test@example.com"),
+					authService.refreshTokens(999, "test123@example.com"),
 				).rejects.toThrow(HttpException);
 			});
 
@@ -290,7 +293,7 @@ describe("AuthModule (Unit + Integration)", () => {
 		describe("login", () => {
 			it("should login successfully, set refreshToken cookie, return user + accessToken", () => {
 				const loginDto: LoginDto = {
-					email: "test@example.com",
+					email: "test123@example.com",
 					password: "password",
 				};
 
@@ -312,7 +315,7 @@ describe("AuthModule (Unit + Integration)", () => {
 
 		describe("refreshTokens", () => {
 			it("should refresh tokens and update cookie", async () => {
-				mockRequest.user = { id: 1, email: "test@example.com" };
+				mockRequest.user = { id: 1, email: "test123@example.com" };
 				jest.spyOn(authService, "refreshTokens").mockResolvedValue(mockTokens);
 
 				const result = await authController.refreshTokens(
@@ -345,7 +348,7 @@ describe("AuthModule (Unit + Integration)", () => {
 			it("should get profile", async () => {
 				jest
 					.spyOn(authService, "getProfile")
-					.mockResolvedValue({ id: 1, email: "test@example.com" } as Omit<
+					.mockResolvedValue({ id: 1, email: "test123@example.com" } as Omit<
 						Account,
 						"password"
 					>);
@@ -356,7 +359,7 @@ describe("AuthModule (Unit + Integration)", () => {
 					user: { id: number };
 				});
 
-				expect(result.email).toBe("test@example.com");
+				expect(result.email).toBe("test123@example.com");
 			});
 
 			it("should change password", async () => {
@@ -386,7 +389,7 @@ describe("AuthModule (Unit + Integration)", () => {
 				.mockResolvedValue(mockUserPayload);
 
 			const result = await localStrategy.validate(
-				"test@example.com",
+				"test123@example.com",
 				"password",
 			);
 
@@ -402,7 +405,7 @@ describe("AuthModule (Unit + Integration)", () => {
 
 			const result = await jwtStrategy.validate({
 				sub: 1,
-				email: "test@example.com",
+				email: "test123@example.com",
 				role: UserRole.RESIDENT,
 			});
 
@@ -418,7 +421,7 @@ describe("AuthModule (Unit + Integration)", () => {
 
 			const result = await refreshStrategy.validate({
 				sub: 1,
-				email: "test@example.com",
+				email: "test123@example.com",
 			});
 
 			expect(result.id).toBe(1);
@@ -439,7 +442,7 @@ describe("AuthModule (Unit + Integration)", () => {
 
 			accountsService.findOne.mockResolvedValue(mockAccount);
 			const refreshReq = {
-				user: { id: 1, email: "test@example.com" },
+				user: { id: 1, email: "test123@example.com" },
 			} as Request & { user: { id: number; email: string } };
 			const refreshRes = { cookie: jest.fn() } as unknown as Response;
 
@@ -458,7 +461,7 @@ describe("AuthModule (Unit + Integration)", () => {
 			accountsService.findOne.mockResolvedValue(mockInactiveAccount);
 
 			await expect(
-				authService.refreshTokens(2, "test@example.com"),
+				authService.refreshTokens(2, "test123@example.com"),
 			).rejects.toThrow(HttpException);
 		});
 

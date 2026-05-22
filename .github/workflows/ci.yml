@@ -632,11 +632,54 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Create Backend CI Environment
+        env:
+          DB_URL: ${{ secrets.E2E_DATABASE_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_BUCKET: ${{ secrets.SUPABASE_BUCKET }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          ACCESS_SECRET: ${{ secrets.JWT_SECRET || 'ci-e2e-access-secret' }}
+          REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET || 'ci-e2e-refresh-secret' }}
+        run: |
+          if [ -z "$DB_URL" ]; then
+            echo "::error::Missing E2E_DATABASE_URL. Add it as a GitHub Actions variable that points to a dedicated test database."
+            exit 1
+          fi
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
+            echo "::error::Missing Supabase config. Add SUPABASE_URL as a variable and SUPABASE_KEY as a secret."
+            exit 1
+          fi
+
+          cat > .env <<EOF
+          DATABASE_URL=$DB_URL
+          E2E_DATABASE_URL=$DB_URL
+          JWT_SECRET=$ACCESS_SECRET
+          JWT_REFRESH_SECRET=$REFRESH_SECRET
+          JWT_ACCESS_EXPIRES_IN=15m
+          JWT_REFRESH_EXPIRES_IN=7d
+          JWT_EXPIRATION=15m
+          JWT_REFRESH_EXPIRATION=7d
+          SUPABASE_URL=$SUPABASE_URL
+          SUPABASE_KEY=$SUPABASE_KEY
+          SUPABASE_BUCKET=$SUPABASE_BUCKET
+          FRONTEND_URL=http://localhost:5173
+          BACKEND_URL=http://localhost:4000
+          VNPAY_TMN_CODE=E2ETMN
+          VNPAY_HASH_SECRET=ci-e2e-vnpay-hash-secret
+          EOF
+
+          cat .env >> "$GITHUB_ENV"
+
       - name: Run Tests with Coverage
         run: |
           npm run test:cov -- \
             --bail \
             --maxWorkers=2
+        env:
+          CI: true
+
+      - name: Run Backend E2E Tests
+        run: npm run test:e2e
         env:
           CI: true
 
