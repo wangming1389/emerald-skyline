@@ -274,6 +274,7 @@ jobs:
         run: |
           npm run test:unit
           npm run test:integration
+          npm run test:e2e
 
       - name: Main gate (coverage >= 35%)
         if: github.ref == 'refs/heads/main'
@@ -287,7 +288,7 @@ jobs:
             echo ""
             echo "- Event: ${{ github.event_name }}"
             echo "- Ref: ${{ github.ref_name }}"
-            echo "- PR: unit + integration"
+            echo "- PR: unit + integration + e2e"
             echo "- main: coverage gate from Vitest config (>=35%)"
           } >> "$GITHUB_STEP_SUMMARY"
 
