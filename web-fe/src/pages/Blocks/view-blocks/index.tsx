@@ -1,3 +1,6 @@
+import { Edit, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import PageHeader from "@/components/common/PageHeader";
 import StatusBadge from "@/components/common/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -5,9 +8,6 @@ import { BlockStatusMap } from "@/constants/blockStatus";
 import { useBlocks } from "@/hooks/data/useBlocks";
 import DeleteBlock from "@/pages/Blocks/delete-block";
 import type { Block } from "@/types/block";
-import { Edit, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 const BlocksPage = () => {
 	const router = useNavigate();
@@ -72,7 +72,7 @@ export const BlockCard = ({ block, action = false }: BlockCardProps) => {
 
 	return (
 		<>
-			<div className="border rounded-lg shadow-sm p-4 bg-white w-[400px]">
+			<div className="border rounded-lg shadow-sm p-4 bg-white w-full max-w-[400px]">
 				<div className="flex items-center justify-between">
 					<h3
 						className="font-bold text-[18px] hover:underline cursor-pointer hover:text-main  decoration-main"
