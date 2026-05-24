@@ -1,38 +1,13 @@
 "use client";
 
-import { Modal } from "@/components/common/Modal";
-import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from "@/components/ui/form";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import z from "zod";
-import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { useCreateApartment } from "@/hooks/data/useApartments";
-import { useBlocks } from "@/hooks/data/useBlocks";
-import { useResidents } from "@/hooks/data/useResidents";
-import { toast } from "sonner";
-import { useEffect, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Check, X } from "lucide-react";
-import { Label } from "@/components/ui/label";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
+import { useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import z from "zod";
+import { Modal } from "@/components/common/Modal";
+import { Button } from "@/components/ui/button";
 import {
 	Command,
 	CommandEmpty,
@@ -41,8 +16,34 @@ import {
 	CommandItem,
 	CommandList,
 } from "@/components/ui/command";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { ApartmentTypeOptions } from "@/constants/apartmentType";
 import { RelationshipTypeOptions } from "@/constants/relationshipType";
+import { useCreateApartment } from "@/hooks/data/useApartments";
+import { useBlocks } from "@/hooks/data/useBlocks";
+import { useResidents } from "@/hooks/data/useResidents";
+
 interface ModalProps {
 	open: boolean;
 	setOpen: (value: boolean) => void;
@@ -124,6 +125,12 @@ const CreateApartmentModal = ({ open, setOpen }: ModalProps) => {
 		value: item.id.toString(),
 		label: `${item.fullName} - ${item.citizenId}`,
 	}));
+	console.log(
+		"[CreateApartmentModal Debug] residents length:",
+		residents?.length,
+		"options:",
+		JSON.stringify(residentOptions),
+	);
 
 	const addResident = (residentId: string) => {
 		const id = Number(residentId);
@@ -351,9 +358,9 @@ const CreateApartmentModal = ({ open, setOpen }: ModalProps) => {
 															{residentOptions?.map((resident) => (
 																<CommandItem
 																	key={resident.value}
-																	value={resident.value}
-																	onSelect={(val) => {
-																		field.onChange(val);
+																	value={resident.label.toLowerCase()}
+																	onSelect={() => {
+																		field.onChange(resident.value);
 																	}}
 																>
 																	{resident.label}

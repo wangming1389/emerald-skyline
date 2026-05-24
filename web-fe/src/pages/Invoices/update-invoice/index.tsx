@@ -177,7 +177,7 @@ const UpdateInvoiceModal = ({ open, setOpen, invoiceId }: UpdateModalProps) => {
 															{apartmentOptions?.map((resident) => (
 																<CommandItem
 																	key={resident.value}
-																	value={resident.label} // 👈 dùng label để search
+																	value={resident.label.toLowerCase()}
 																	onSelect={() => {
 																		field.onChange(resident.value); // vẫn lưu id
 																	}}

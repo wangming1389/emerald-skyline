@@ -1,27 +1,12 @@
 "use client";
 
-import { Modal } from "@/components/common/Modal";
-import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from "@/components/ui/form";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import z from "zod";
-import { Input } from "@/components/ui/input";
-import { useCreateInvoice } from "@/hooks/data/useInvoices";
-import { useApartments } from "@/hooks/data/useApartments";
+import { Check } from "lucide-react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import z from "zod";
 import { DatePicker } from "@/components/common/DatePicker";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
+import { Modal } from "@/components/common/Modal";
 import { Button } from "@/components/ui/button";
 import {
 	Command,
@@ -31,7 +16,22 @@ import {
 	CommandItem,
 	CommandList,
 } from "@/components/ui/command";
-import { Check } from "lucide-react";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
+import { useApartments } from "@/hooks/data/useApartments";
+import { useCreateInvoice } from "@/hooks/data/useInvoices";
 
 interface ModalProps {
 	open: boolean;
@@ -95,6 +95,12 @@ const CreateInvoiceModal = ({ open, setOpen }: ModalProps) => {
 		value: item.id.toString(),
 		label: `${item.roomName} - ${item.block}`,
 	}));
+	console.log(
+		"[CreateInvoiceModal Debug] apartments length:",
+		apartments?.length,
+		"options:",
+		JSON.stringify(apartmentOptions),
+	);
 	return (
 		<Modal
 			open={open}
@@ -144,7 +150,7 @@ const CreateInvoiceModal = ({ open, setOpen }: ModalProps) => {
 															{apartmentOptions?.map((resident) => (
 																<CommandItem
 																	key={resident.value}
-																	value={resident.label} // 👈 dùng label để search
+																	value={resident.label.toLowerCase()}
 																	onSelect={() => {
 																		field.onChange(resident.value); // vẫn lưu id
 																	}}

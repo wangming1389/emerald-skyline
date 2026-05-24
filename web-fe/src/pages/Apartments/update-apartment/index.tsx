@@ -397,9 +397,9 @@ const UpdateApartmentModal = ({
 															{residentOptions?.map((resident) => (
 																<CommandItem
 																	key={resident.value}
-																	value={resident.value}
-																	onSelect={(val) => {
-																		field.onChange(val);
+																	value={resident.label.toLowerCase()}
+																	onSelect={() => {
+																		field.onChange(resident.value);
 																	}}
 																>
 																	{resident.label}

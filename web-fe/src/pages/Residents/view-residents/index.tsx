@@ -1,20 +1,19 @@
-import { useState, useMemo } from "react";
 import { Plus, Printer, Trash2 } from "lucide-react";
-import PageHeader from "@/components/common/PageHeader";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ActionDropdown from "@/components/common/ActionDropdown";
 import CustomTable from "@/components/common/CustomTable";
+import PageHeader from "@/components/common/PageHeader";
 import { SearchBar } from "@/components/common/SearchBar";
-
-import { residentColumns } from "./columns";
-import type { ActionOption } from "@/types";
-import { normalizeString } from "@/utils/string";
 import { useResidents } from "@/hooks/data/useResidents";
 import CreateResidentModal from "@/pages/Residents/create-resident";
 import DeleteResident from "@/pages/Residents/delete-resident";
 import DeleteManyResidentModal from "@/pages/Residents/multiple-delete-residents";
-import type { Resident } from "@/types/resident";
 import UpdateResidentModal from "@/pages/Residents/update-resident";
-import { useNavigate } from "react-router-dom";
+import type { ActionOption } from "@/types";
+import type { Resident } from "@/types/resident";
+import { normalizeString } from "@/utils/string";
+import { residentColumns } from "./columns";
 import { PrintableResidentList } from "./print";
 
 const ResidentsPage = () => {
@@ -147,7 +146,13 @@ const ResidentsPage = () => {
 								setIsDeleteOpen(true);
 								setDeletedResident(row as Resident);
 							}}
-							onView={(row) => navigate(`/residents/${row.id}`)}
+							onView={(row) => {
+								console.log(
+									"[ViewResidents Debug] onView clicked for row:",
+									row.id,
+								);
+								navigate(`/residents/${row.id}`);
+							}}
 							// isEditable={(row) => {
 							//   const resident = row as Resident;
 							//   return !resident.residences || resident.residences.length === 0;

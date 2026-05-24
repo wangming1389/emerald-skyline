@@ -72,78 +72,143 @@ test.describe("Blocks Management (Quản lý tòa nhà)", () => {
 		// Seed authentication as ADMIN
 		await seedAuthUser(page, "ADMIN");
 
-		// Route GET and POST blocks
-		await page.route("**/api/blocks", async (route) => {
-			const method = route.request().method();
-			if (method === "GET") {
-				await route.fulfill({
-					status: 200,
-					contentType: "application/json",
-					body: JSON.stringify({
-						success: true,
-						data: mockBlocks,
-					}),
-				});
-			} else if (method === "POST") {
-				const postData = JSON.parse(route.request().postData() || "{}");
-				const newBlock = {
-					id: Date.now(), // Generate a unique ID
-					buildingName: postData.buildingName,
-					managerName: postData.managerName,
-					managerPhone: postData.managerPhone,
-					status: postData.status,
-					totalFloors: postData.apartments?.length
-						? Math.max(...postData.apartments.map((a: any) => a.floor))
-						: 1,
-					totalRooms: postData.apartments?.length || 0,
-					roomDetails: {
-						studio:
-							postData.apartments?.filter((a: any) => a.type === "STUDIO")
-								.length || 0,
-						oneBedroom:
-							postData.apartments?.filter((a: any) => a.type === "ONE_BEDROOM")
-								.length || 0,
-						twoBedroom:
-							postData.apartments?.filter((a: any) => a.type === "TWO_BEDROOM")
-								.length || 0,
-						penthouse:
-							postData.apartments?.filter((a: any) => a.type === "PENTHOUSE")
-								.length || 0,
-					},
-				};
-				mockBlocks.push(newBlock);
-				await route.fulfill({
-					status: 201,
-					contentType: "application/json",
-					body: JSON.stringify({
-						success: true,
-						data: newBlock,
-					}),
-				});
+		// Log failed requests and console errors for easy debugging
+		page.on("requestfailed", (request) => {
+			console.log(
+				`REQUEST FAILED: ${request.url()} - ${request.failure()?.errorText}`,
+			);
+		});
+		page.on("console", (msg) => {
+			if (msg.type() === "error") {
+				console.log(`PAGE CONSOLE ERROR: ${msg.text()}`);
 			}
 		});
 
-		// Route specific block requests (GET details, has-residents check, and DELETE)
-		await page.route("**/api/blocks/*", async (route) => {
-			const url = route.request().url();
+		// Route all API requests globally, handling CORS preflight
+		await page.route("**/api/**", async (route) => {
 			const method = route.request().method();
-			const idMatch = url.match(/\/blocks\/(\d+)/);
-			const id = idMatch ? parseInt(idMatch[1], 10) : null;
+			const url = route.request().url();
 
-			if (method === "GET") {
-				if (url.endsWith("/has-residents")) {
+			if (method === "OPTIONS") {
+				await route.fulfill({
+					status: 200,
+					headers: {
+						"Access-Control-Allow-Origin": "http://127.0.0.1:4173",
+						"Access-Control-Allow-Credentials": "true",
+						"Access-Control-Allow-Methods":
+							"GET, POST, PATCH, PUT, DELETE, OPTIONS",
+						"Access-Control-Allow-Headers": "Content-Type, Authorization",
+					},
+				});
+				return;
+			}
+
+			// GET & POST **/api/v1/blocks
+			if (
+				url.includes("/blocks") &&
+				!url.includes("/has-residents") &&
+				!/\/blocks\/\d+/.test(url)
+			) {
+				if (method === "GET") {
 					await route.fulfill({
 						status: 200,
 						contentType: "application/json",
+						headers: {
+							"Access-Control-Allow-Origin": "http://127.0.0.1:4173",
+							"Access-Control-Allow-Credentials": "true",
+						},
 						body: JSON.stringify({
 							success: true,
-							data: { hasResidents: false },
+							data: mockBlocks,
 						}),
 					});
-				} else if (id) {
+				} else if (method === "POST") {
+					const postData = JSON.parse(route.request().postData() || "{}");
+					const newBlock = {
+						id: Date.now(),
+						buildingName: postData.buildingName,
+						managerName: postData.managerName,
+						managerPhone: postData.managerPhone,
+						status: postData.status,
+						totalFloors: postData.apartments?.length
+							? Math.max(...postData.apartments.map((a: any) => a.floor))
+							: 1,
+						totalRooms: postData.apartments?.length || 0,
+						roomDetails: {
+							studio:
+								postData.apartments?.filter((a: any) => a.type === "STUDIO")
+									.length || 0,
+							oneBedroom:
+								postData.apartments?.filter(
+									(a: any) => a.type === "ONE_BEDROOM",
+								).length || 0,
+							twoBedroom:
+								postData.apartments?.filter(
+									(a: any) => a.type === "TWO_BEDROOM",
+								).length || 0,
+							penthouse:
+								postData.apartments?.filter((a: any) => a.type === "PENTHOUSE")
+									.length || 0,
+						},
+					};
+					mockBlocks.push(newBlock);
+					await route.fulfill({
+						status: 201,
+						contentType: "application/json",
+						headers: {
+							"Access-Control-Allow-Origin": "http://127.0.0.1:4173",
+							"Access-Control-Allow-Credentials": "true",
+						},
+						body: JSON.stringify({
+							success: true,
+							data: newBlock,
+						}),
+					});
+				}
+				return;
+			}
+
+			// GET **/api/v1/blocks/:id/has-residents
+			if (url.includes("/has-residents")) {
+				await route.fulfill({
+					status: 200,
+					contentType: "application/json",
+					headers: {
+						"Access-Control-Allow-Origin": "http://127.0.0.1:4173",
+						"Access-Control-Allow-Credentials": "true",
+					},
+					body: JSON.stringify({
+						success: true,
+						data: { hasResidents: false },
+					}),
+				});
+				return;
+			}
+
+			// GET **/api/v1/system-notifications/my-notifications
+			if (url.includes("/system-notifications")) {
+				await route.fulfill({
+					status: 200,
+					contentType: "application/json",
+					headers: {
+						"Access-Control-Allow-Origin": "http://127.0.0.1:4173",
+						"Access-Control-Allow-Credentials": "true",
+					},
+					body: JSON.stringify({
+						success: true,
+						data: [],
+					}),
+				});
+				return;
+			}
+
+			// GET & DELETE **/api/v1/blocks/:id
+			const blockIdMatch = url.match(/\/blocks\/(\d+)/);
+			if (blockIdMatch) {
+				const id = parseInt(blockIdMatch[1], 10);
+				if (method === "GET") {
 					const block = mockBlocks.find((b) => b.id === id);
 					if (block) {
-						// Create dummy apartments inside block detail
 						const apartments = Array.from({ length: block.totalRooms }).map(
 							(_, index) => ({
 								id: 100 + index,
@@ -159,10 +224,13 @@ test.describe("Blocks Management (Quản lý tòa nhà)", () => {
 								hasResidents: false,
 							}),
 						);
-
 						await route.fulfill({
 							status: 200,
 							contentType: "application/json",
+							headers: {
+								"Access-Control-Allow-Origin": "http://127.0.0.1:4173",
+								"Access-Control-Allow-Credentials": "true",
+							},
 							body: JSON.stringify({
 								success: true,
 								data: {
@@ -175,6 +243,40 @@ test.describe("Blocks Management (Quản lý tòa nhà)", () => {
 						await route.fulfill({
 							status: 404,
 							contentType: "application/json",
+							headers: {
+								"Access-Control-Allow-Origin": "http://127.0.0.1:4173",
+								"Access-Control-Allow-Credentials": "true",
+							},
+							body: JSON.stringify({
+								success: false,
+								message: "Block not found",
+							}),
+						});
+					}
+				} else if (method === "DELETE") {
+					const index = mockBlocks.findIndex((b) => b.id === id);
+					if (index !== -1) {
+						const deletedBlock = mockBlocks.splice(index, 1)[0];
+						await route.fulfill({
+							status: 200,
+							contentType: "application/json",
+							headers: {
+								"Access-Control-Allow-Origin": "http://127.0.0.1:4173",
+								"Access-Control-Allow-Credentials": "true",
+							},
+							body: JSON.stringify({
+								success: true,
+								data: deletedBlock,
+							}),
+						});
+					} else {
+						await route.fulfill({
+							status: 404,
+							contentType: "application/json",
+							headers: {
+								"Access-Control-Allow-Origin": "http://127.0.0.1:4173",
+								"Access-Control-Allow-Credentials": "true",
+							},
 							body: JSON.stringify({
 								success: false,
 								message: "Block not found",
@@ -182,28 +284,11 @@ test.describe("Blocks Management (Quản lý tòa nhà)", () => {
 						});
 					}
 				}
-			} else if (method === "DELETE") {
-				if (id) {
-					const index = mockBlocks.findIndex((b) => b.id === id);
-					if (index !== -1) {
-						const deletedBlock = mockBlocks.splice(index, 1)[0];
-						await route.fulfill({
-							status: 200,
-							contentType: "application/json",
-							body: JSON.stringify({
-								success: true,
-								data: deletedBlock,
-							}),
-						});
-						return;
-					}
-				}
-				await route.fulfill({
-					status: 404,
-					contentType: "application/json",
-					body: JSON.stringify({ success: false, message: "Block not found" }),
-				});
+				return;
 			}
+
+			// Fallback/continue
+			await route.continue();
 		});
 	});
 

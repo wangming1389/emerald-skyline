@@ -9,7 +9,7 @@ export default defineConfig({
 	fullyParallel: false,
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 2 : 0,
-	workers: process.env.CI ? 1 : undefined,
+	workers: 1,
 	reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
 	use: {
 		baseURL: "http://127.0.0.1:4173",
@@ -22,11 +22,17 @@ export default defineConfig({
 		url: "http://127.0.0.1:4173",
 		reuseExistingServer: !process.env.CI,
 		timeout: 120_000,
+		env: {
+			VITE_API_URL: "https://emerald-skyline-beee.onrender.com/api/v1",
+		},
 	},
 	projects: [
 		{
 			name: "chromium",
-			use: { ...devices["Desktop Chrome"] },
+			use: {
+				...devices["Desktop Chrome"],
+				viewport: { width: 1920, height: 1080 },
+			},
 		},
 	],
 });

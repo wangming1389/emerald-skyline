@@ -1,19 +1,25 @@
 "use client";
 
-import * as React from "react";
 import { type DialogProps } from "@radix-ui/react-dialog";
 import { Command as CommandPrimitive } from "cmdk";
 import { Search } from "lucide-react";
-
-import { cn } from "@/lib/utils";
+import * as React from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 const Command = React.forwardRef<
 	React.ElementRef<typeof CommandPrimitive>,
 	React.ComponentPropsWithoutRef<typeof CommandPrimitive>
->(({ className, ...props }, ref) => (
+>(({ className, filter, ...props }, ref) => (
 	<CommandPrimitive
 		ref={ref}
+		filter={
+			filter ??
+			((value, search) => {
+				if (value.toLowerCase().includes(search.toLowerCase())) return 1;
+				return 0;
+			})
+		}
 		className={cn(
 			"flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground",
 			className,
@@ -143,11 +149,11 @@ CommandShortcut.displayName = "CommandShortcut";
 export {
 	Command,
 	CommandDialog,
-	CommandInput,
-	CommandList,
 	CommandEmpty,
 	CommandGroup,
+	CommandInput,
 	CommandItem,
-	CommandShortcut,
+	CommandList,
 	CommandSeparator,
+	CommandShortcut,
 };
