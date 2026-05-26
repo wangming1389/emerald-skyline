@@ -45,7 +45,7 @@ export class VNPayService {
 			vnp_TxnRef: orderId,
 			vnp_OrderInfo: orderInfo,
 			vnp_OrderType: "other",
-			vnp_Amount: amount * 100, // VNPay requires amount in smallest unit (VND * 100)
+			vnp_Amount: Math.round(amount * 100), // VNPay requires an integer amount in VND * 100.
 			vnp_ReturnUrl: returnUrl,
 			vnp_IpAddr: ipAddr,
 			vnp_CreateDate: createDate,

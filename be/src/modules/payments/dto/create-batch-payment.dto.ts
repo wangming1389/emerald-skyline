@@ -54,7 +54,7 @@ export class CreateBatchPaymentDto {
 	deviceType?: "web" | "mobile" | "ios" | "android";
 
 	@ApiProperty({
-		example: "emerald://payments/result?txnRef=BATCH_INV_123456",
+		example: "emerald://payments/result?txnRef=BATCHINVOICE123456",
 		description: "Custom redirect URL (mobile deep link or web URL)",
 		required: false,
 	})

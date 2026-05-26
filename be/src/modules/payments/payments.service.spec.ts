@@ -40,7 +40,7 @@ const mockBooking = {
 
 const mockPayment = {
 	id: 10,
-	txnRef: "INV_1_1713859200000",
+	txnRef: "INV11713859200000",
 	targetType: PaymentTargetType.INVOICE,
 	targetId: 1,
 	accountId: 99,
@@ -161,7 +161,7 @@ describe("PaymentsService", () => {
 		expect(result.amount).toBe(750000);
 		expect(vnpayService.createPayment).toHaveBeenCalledWith(
 			expect.objectContaining({
-				orderId: expect.stringContaining("INV_1_"),
+				orderId: expect.stringContaining("INV1"),
 				amount: 750000,
 				returnUrl: "https://frontend.example.com/custom-result",
 			}),
@@ -312,7 +312,7 @@ describe("PaymentsService", () => {
 
 		await expect(
 			service.handleVNPayWebhook({
-				vnp_TxnRef: "INV_1_1713859200000",
+				vnp_TxnRef: "INV11713859200000",
 				vnp_ResponseCode: "00",
 			}),
 		).rejects.toBeInstanceOf(BadRequestException);
@@ -395,7 +395,7 @@ describe("PaymentsService", () => {
 				paymentMethod: PaymentGateway.VNPAY,
 			} as CreatePaymentDto);
 
-			expect(created.txnRef).toContain("INV_1_");
+			expect(created.txnRef).toContain("INV1");
 			expect(created.paymentUrl).toBe("https://sandbox.vnpay.vn/pay");
 
 			jest.clearAllMocks();

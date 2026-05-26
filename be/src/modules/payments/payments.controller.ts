@@ -339,7 +339,7 @@ export class PaymentsController {
 		type: String,
 		description: "Mã đơn vị tiếp nhận",
 		required: true,
-		example: "XEYNWDOI",
+		example: "XISGGWC4",
 	})
 	@ApiQuery({
 		name: "vnp_TransactionNo",
@@ -358,9 +358,9 @@ export class PaymentsController {
 	@ApiQuery({
 		name: "vnp_TxnRef",
 		type: String,
-		description: "Mã tham chiếu từ hệ thống (VD: INV_2_1768407018995)",
+		description: "Mã tham chiếu từ hệ thống (VD: INV21768407018995)",
 		required: true,
-		example: "INV_2_1768407018995",
+		example: "INV21768407018995",
 	})
 	@ApiQuery({
 		name: "vnp_SecureHash",
@@ -379,7 +379,7 @@ export class PaymentsController {
 				message: "Payment verified and processed successfully",
 				data: {
 					transactionId: 2,
-					txnRef: "INV_2_1768407018995",
+					txnRef: "INV21768407018995",
 					status: "SUCCESS",
 					amount: 763557000,
 					paymentMethod: "VNPAY",
