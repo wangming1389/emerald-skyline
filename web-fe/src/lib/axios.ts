@@ -1,5 +1,9 @@
 import axios from "axios";
-import { clearTokens, getAccessToken, setTokens } from "@/lib/auth-storage";
+import {
+	clearAuthStorage,
+	getAccessToken,
+	setTokens,
+} from "@/lib/auth-storage";
 import { refreshToken } from "@/services/auth.service";
 
 const axiosInstance = axios.create({
@@ -30,29 +34,68 @@ axiosInstance.interceptors.response.use(
 
 	async (error) => {
 		const originalRequest = error.config;
+		if (!originalRequest) return Promise.reject(error);
+
 		// nếu token hết hạn
 		if (error.response?.status === 401 && !originalRequest._retry) {
-			console.log(error.response?.status);
 			originalRequest._retry = true;
 
-			try {
-				const res = await refreshToken();
+			// Single-flight refresh implementation
+			let isRefreshing = (axiosInstance as any)._isRefreshing as boolean;
+			let subscribers = (axiosInstance as any)._refreshSubscribers as Array<
+				(token: string | null) => void
+			>;
 
-				const { accessToken } = res;
-				console.log("Token refreshed", accessToken);
-				// lưu token mới
-				setTokens(accessToken);
-
-				// gắn token mới cho request cũ
-				originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-
-				// gọi lại request ban đầu
-				return axiosInstance(originalRequest);
-			} catch (err) {
-				clearTokens();
-				window.location.href = "/login";
-				return Promise.reject(err);
+			if (!subscribers) {
+				subscribers = [];
+				(axiosInstance as any)._refreshSubscribers = subscribers;
 			}
+
+			const subscribeTokenRefresh = (cb: (token: string | null) => void) => {
+				subscribers.push(cb);
+			};
+
+			const onRefreshed = (token: string | null) => {
+				subscribers.forEach((cb) => cb(token));
+				(axiosInstance as any)._refreshSubscribers = [];
+			};
+
+			if (!(axiosInstance as any)._isRefreshing) {
+				(axiosInstance as any)._isRefreshing = true;
+				try {
+					const res = await refreshToken();
+					const { accessToken } = res;
+					setTokens(accessToken);
+					onRefreshed(accessToken);
+				} catch (err) {
+					// refresh failed -> clear and notify subscribers
+					clearAuthStorage();
+					onRefreshed(null);
+					// redirect once if not already on login
+					if (
+						typeof window !== "undefined" &&
+						window.location.pathname !== "/login"
+					) {
+						window.location.href = "/login";
+					}
+					(axiosInstance as any)._isRefreshing = false;
+					return Promise.reject(err);
+				} finally {
+					(axiosInstance as any)._isRefreshing = false;
+				}
+			}
+
+			// return a promise that resolves once the token is refreshed
+			return new Promise((resolve, reject) => {
+				subscribeTokenRefresh((token) => {
+					if (token) {
+						originalRequest.headers.Authorization = `Bearer ${token}`;
+						resolve(axiosInstance(originalRequest));
+					} else {
+						reject(error);
+					}
+				});
+			});
 		}
 
 		return Promise.reject(error);
