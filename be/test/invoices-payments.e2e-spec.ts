@@ -110,7 +110,7 @@ describe("Invoices and Payments (e2e)", () => {
 			amount: string;
 			paymentUrl: string;
 		}>(paymentResponse.body);
-		expect(payment.txnRef).toEqual(expect.stringMatching(/^INV_/));
+		expect(payment.txnRef).toEqual(expect.stringMatching(/^INV\d+$/));
 		expect(payment.paymentUrl).toContain("vnp_SecureHash=");
 
 		const webhookParams: Record<string, string> = {
@@ -156,7 +156,7 @@ describe("Invoices and Payments (e2e)", () => {
 		await request(app.getHttpServer())
 			.get("/api/v1/payments/webhook/vnpay")
 			.query({
-				vnp_TxnRef: "INV_999_123",
+				vnp_TxnRef: "INV999123",
 				vnp_ResponseCode: "00",
 				vnp_Amount: "10000",
 				vnp_TmnCode: "E2ETMN",
