@@ -20,7 +20,7 @@ export class MoMoWebhookDto {
 	partnerCode: string;
 
 	@ApiProperty({
-		example: "INV_1_1768445052607",
+		example: "INV11768445052607",
 		description: "Order ID (same as txnRef)",
 	})
 	@IsString()
@@ -28,7 +28,7 @@ export class MoMoWebhookDto {
 	orderId: string;
 
 	@ApiProperty({
-		example: "INV_1_1768445052607_1768445052818",
+		example: "INV11768445052607_1768445052818",
 		description: "Request ID",
 	})
 	@IsString()

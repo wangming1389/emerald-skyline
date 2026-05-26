@@ -49,7 +49,7 @@ export class CreatePaymentDto {
 	deviceType?: "web" | "mobile" | "ios" | "android";
 
 	@ApiProperty({
-		example: "emerald://payments/result?txnRef=INV_1_123456",
+		example: "emerald://payments/result?txnRef=INV1123456",
 		description: "Custom redirect URL (mobile deep link or web URL)",
 		required: false,
 	})

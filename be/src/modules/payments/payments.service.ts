@@ -285,10 +285,10 @@ export class PaymentsService {
 
 		// Use first valid ID for transaction creation
 		const primaryTargetId = validTargetIds[0];
-		const batchRef = `BATCH_${targetType}_${Date.now()}`;
+		const batchRef = `BATCH${targetType}${Date.now()}`;
 
 		// Generate unique txnRef with batch info
-		const txnRef = `${batchRef}_${primaryTargetId}`;
+		const txnRef = `${batchRef}${primaryTargetId}`;
 
 		// Create single payment transaction for batch
 		const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
@@ -591,7 +591,7 @@ export class PaymentsService {
 	): string {
 		const prefix = targetType === PaymentTargetType.INVOICE ? "INV" : "BKG";
 		const timestamp = Date.now();
-		return `${prefix}_${targetId}_${timestamp}`;
+		return `${prefix}${targetId}${timestamp}`;
 	}
 
 	private parseVNPayDate(vnpPayDate: string): Date {
