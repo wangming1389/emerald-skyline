@@ -121,6 +121,8 @@ export async function seedApartment(
 		relationRepository.create({
 			apartmentId: apartment.id,
 			residentId: resident.id,
+			apartment,
+			resident,
 			relationship: RelationshipType.OWNER,
 		}),
 	);
