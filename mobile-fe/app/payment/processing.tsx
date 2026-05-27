@@ -35,7 +35,9 @@ export default function PaymentProcessingScreen() {
 
 	const txnRef = (params.txnRef as string) || "";
 	const rawPaymentUrl = (params.paymentUrl as string) || "";
-	const paymentUrl = rawPaymentUrl ? decodeURIComponent(rawPaymentUrl) : "";
+	const paymentUrl = rawPaymentUrl.startsWith("http")
+		? rawPaymentUrl
+		: decodeURIComponent(rawPaymentUrl);
 	const amount = params.amount ? Number(params.amount as string) : 0;
 	const paymentMethod = ((params.paymentMethod as string) || "vnpay") as
 		| "momo"
