@@ -52,16 +52,14 @@ export class VNPayService {
 			vnp_ExpireDate: expireDate,
 		};
 
-		// Sort params
+		// Sort and encode params following VNPay's Node.js demo.
 		vnpParams = this.sortObject(vnpParams);
 
-		const signData = new URLSearchParams(vnpParams).toString();
+		const signData = this.stringifyParams(vnpParams);
 		const hmac = crypto.createHmac("sha512", this.hashSecret);
 		const signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
-		vnpParams.vnp_SecureHash = signed;
 
-		const payUrl =
-			this.endpoint + "?" + new URLSearchParams(vnpParams).toString();
+		const payUrl = `${this.endpoint}?${signData}&vnp_SecureHash=${signed}`;
 
 		return { payUrl };
 	}
@@ -76,8 +74,7 @@ export class VNPayService {
 
 		const sortedParams = this.sortObject(params);
 
-		// Build sign data using URLSearchParams (same as VNPay does)
-		const signData = new URLSearchParams(sortedParams).toString();
+		const signData = this.stringifyParams(sortedParams);
 
 		const hmac = crypto.createHmac("sha512", this.hashSecret);
 		const signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
@@ -87,11 +84,24 @@ export class VNPayService {
 
 	private sortObject(obj: any): any {
 		const sorted: any = {};
-		const keys = Object.keys(obj).sort();
-		keys.forEach((key) => {
-			sorted[key] = obj[key];
-		});
+		const keys = Object.keys(obj)
+			.map((key) => encodeURIComponent(key))
+			.sort();
+
+		for (const encodedKey of keys) {
+			const rawValue = obj[encodedKey] ?? obj[decodeURIComponent(encodedKey)];
+			sorted[encodedKey] = encodeURIComponent(String(rawValue)).replace(
+				/%20/g,
+				"+",
+			);
+		}
 		return sorted;
+	}
+
+	private stringifyParams(params: Record<string, string>): string {
+		return Object.entries(params)
+			.map(([key, value]) => `${key}=${value}`)
+			.join("&");
 	}
 
 	private formatDateInVnTimezone(date: Date): string {
