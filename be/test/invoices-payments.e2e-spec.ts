@@ -22,9 +22,14 @@ import { createE2eApp, truncateDatabase } from "./helpers/test-db.helper";
 function signVnpayParams(params: Record<string, string>) {
 	const sorted: Record<string, string> = {};
 	Object.keys(params)
+		.map((key) => encodeURIComponent(key))
 		.sort()
-		.forEach((key) => {
-			sorted[key] = params[key];
+		.forEach((encodedKey) => {
+			const rawValue = params[encodedKey] ?? params[decodeURIComponent(encodedKey)];
+			sorted[encodedKey] = encodeURIComponent(String(rawValue)).replace(
+				/%20/g,
+				"+",
+			);
 		});
 
 	return crypto
@@ -32,7 +37,14 @@ function signVnpayParams(params: Record<string, string>) {
 			"sha512",
 			process.env.VNPAY_HASH_SECRET || "e2e-vnpay-hash-secret",
 		)
-		.update(Buffer.from(new URLSearchParams(sorted).toString(), "utf-8"))
+		.update(
+			Buffer.from(
+				Object.entries(sorted)
+					.map(([key, value]) => `${key}=${value}`)
+					.join("&"),
+				"utf-8",
+			),
+		)
 		.digest("hex");
 }
 
